@@ -4,24 +4,44 @@ import os
 from dotenv import load_dotenv
 
 # ----------------------------
-# Load Environment Variables
-# ----------------------------
-load_dotenv()
-
-# Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# Load Gemini Model
-model = genai.GenerativeModel("gemini-2.5-flash")
-
-# ----------------------------
 # Page Configuration
 # ----------------------------
 st.set_page_config(
-    page_title="AI Learning Buddy",
+    page_title="AI Learning Buddy Manika",
     page_icon="🎓",
     layout="centered"
 )
+
+# ----------------------------
+# Load API Key
+# ----------------------------
+load_dotenv()
+
+api_key = None
+
+# Try Streamlit Secrets first
+try:
+    api_key = st.secrets["GEMINI_API_KEY"]
+except Exception:
+    pass
+
+# If not found, use local .env
+if not api_key:
+    api_key = os.getenv("GEMINI_API_KEY")
+
+if not api_key:
+    st.error("❌ Gemini API Key not found!")
+    st.info(
+        "For local use, create a .env file.\n"
+        "For Streamlit Cloud, add GEMINI_API_KEY in App Settings → Secrets."
+    )
+    st.stop()
+
+# Configure Gemini
+genai.configure(api_key=api_key)
+
+# Load Gemini Model
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 # ----------------------------
 # Custom CSS
@@ -33,7 +53,6 @@ st.markdown("""
     background: linear-gradient(to right,#eef2ff,#f9fbff);
 }
 
-/* Header */
 .main-title{
     text-align:center;
     font-size:42px;
@@ -48,18 +67,15 @@ st.markdown("""
     margin-bottom:30px;
 }
 
-/* Input */
 .stTextInput input{
     border-radius:10px;
     border:2px solid #4F8BF9;
 }
 
-/* Select Box */
 .stSelectbox div[data-baseweb="select"]{
     border-radius:10px;
 }
 
-/* Button */
 .stButton > button{
     width:100%;
     background:linear-gradient(90deg,#4F8BF9,#6C63FF);
@@ -75,7 +91,6 @@ st.markdown("""
     background:linear-gradient(90deg,#3d73d9,#5148ff);
 }
 
-/* Response Card */
 .response-card{
     background:white;
     padding:25px;
@@ -84,7 +99,6 @@ st.markdown("""
     margin-top:20px;
 }
 
-/* Footer */
 .footer{
     text-align:center;
     color:gray;
@@ -100,11 +114,11 @@ st.markdown("""
 # ----------------------------
 with st.sidebar:
 
-    st.title("🎓 AI Learning Buddy")
+    st.title("🎓 AI Learning Buddy Manika")
 
     st.markdown("---")
 
-    st.write("""
+    st.markdown("""
 ### Features
 
 ✅ Explain Concepts
@@ -125,15 +139,15 @@ with st.sidebar:
 
 ---
 
-Made by **Manika**
+Created by **Manika Sarkar**
 """)
 
 # ----------------------------
-# Main Heading
+# Header
 # ----------------------------
 st.markdown("""
 <div class='main-title'>
-🎓 AI Learning Buddy
+🎓 AI Learning Buddy Manika
 </div>
 
 <div class='sub-title'>
@@ -157,11 +171,11 @@ option = st.selectbox(
 )
 
 # ----------------------------
-# Generate Button
+# Generate
 # ----------------------------
 if st.button("🚀 Generate"):
 
-    if topic.strip() == "":
+    if not topic.strip():
         st.warning("⚠️ Please enter a topic.")
 
     else:
@@ -173,16 +187,19 @@ if st.button("🚀 Generate"):
             prompt = f"Give one simple real-life example of {topic}."
 
         elif option == "Generate Quiz":
-            prompt = f"Create 5 MCQs on {topic} with answers."
+            prompt = f"Create 5 multiple-choice questions on {topic} with answers."
 
         else:
             prompt = topic
 
         try:
 
-            with st.spinner("🤖 AI is thinking..."):
+            with st.spinner("🤖 AI is generating your response..."):
 
-                response = model.generate_content(prompt)
+                response = model.generate_content(
+                    prompt,
+                    request_options={"timeout": 30}
+                )
 
             st.markdown("<div class='response-card'>", unsafe_allow_html=True)
 
@@ -192,15 +209,18 @@ if st.button("🚀 Generate"):
 
             st.markdown("</div>", unsafe_allow_html=True)
 
+            st.success("✅ Response generated successfully!")
+
         except Exception as e:
 
-            st.error(f"❌ Error: {e}")
+            st.error("❌ Unable to generate response.")
+            st.exception(e)
 
 # ----------------------------
 # Footer
 # ----------------------------
 st.markdown("""
 <div class='footer'>
-Made with ❤️ by <b>Manika</b>
+Made with ❤️ by <b>Manika Sarkar</b>
 </div>
 """, unsafe_allow_html=True)
