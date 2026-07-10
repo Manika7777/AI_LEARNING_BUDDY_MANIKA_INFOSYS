@@ -40,11 +40,7 @@ streamlit run app.py
 
 ## 🌐 Live Demo
 
-Paste your Streamlit URL here.
-
-## 📸 Screenshots
-
-(Add screenshots if required.)
+https://ailearningbuddymanikainfosys-7nlogbqnmx6narxup2dj5t.streamlit.app/
 
 ## 👩‍💻 Developed By
 
